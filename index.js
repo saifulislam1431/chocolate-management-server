@@ -1,6 +1,6 @@
 const express = require('express');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const port = process.env.PORT || 5000;
 const app = express();
@@ -34,11 +34,44 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result)
     })
+    app.get("/chocolates/:id", async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await chocolateCollection.findOne(query)
+      res.send(result);
+    })
+
 
     // Create data
     app.post("/chocolates",async(req,res)=>{
       const newChocolate = req.body;
       const result = await chocolateCollection.insertOne(newChocolate)
+      res.send(result)
+    })
+
+    // Delete Data
+    app.delete("/chocolates/:id", async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await chocolateCollection.deleteOne(query)
+      res.send(result);
+    })
+
+    // Update Data
+    app.put("/chocolates/:id", async(req,res)=>{
+      const id = req.params.id;
+      const filter = {_id : new ObjectId(id)};
+      const option = {upsert : true};
+      const updatedChocolate = req.body;
+      const update = {
+        $set:{
+          name : updatedChocolate.name,
+          country : updatedChocolate.country,
+          category : updatedChocolate.category,
+          photo : updatedChocolate.photo
+        }
+      }
+      const result = await chocolateCollection.updateOne(filter , update, option)
       res.send(result)
     })
 
