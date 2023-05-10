@@ -2,7 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
-const port = process.env.PORT || 6000;
+const port = process.env.PORT || 5000;
 const app = express();
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.8cnv71c.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -28,7 +28,19 @@ async function run() {
     await client.connect();
 
     const chocolateCollection = client.db("chocolateServer").collection("chocolates");
+    // Read data
+    app.get("/chocolates", async(req,res)=>{
+      const cursor = chocolateCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
 
+    // Create data
+    app.post("/chocolates",async(req,res)=>{
+      const newChocolate = req.body;
+      const result = await chocolateCollection.insertOne(newChocolate)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
